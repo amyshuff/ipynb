@@ -1,0 +1,1469 @@
+---
+title: An R Markdown document converted from "C_R_Annual_Food_Ranking_Generator.ipynb"
+output: html_document
+---
+
+**Children at Risk Texas School Food Ranking**
+---
+Authors: Kavitha Shankar & Sara Moran
+---
+This program is the Children At Risk Annual Food Ranking Generator. The below code is divided into two steps. one, to invoke "R" program (since the orignal code was in R) via Google Colab and two, to generate the ranking itself. 
+
+**Please read all the notes and comments included before proceeding.**
+
+
+---
+
+
+# **Important Notes**
+
+1.   Please **make a copy of this file in your own Google Drive**. Please DONOT change anything in this copy of the program. To make a copy, go to "File" > "Save a Copy in Drive". It will get saved in your Google drive.
+2.   Google Colab by default offers only Python kernels. In order to run R, we need to invoke R explcitly. If you have a different IDE for R, you can skip to the part where it says "School Food Ranking Program" and copy and paste that code. 
+3. **As of 12.02.2020, I have added direct API calls to TDA to download required files on-the-fly.** If the API calls do not work, check the links. If you do not want to use API calls, please use direct links provided under "Methodology" to manually download the files. Please ensure you have all the relevant files before running the program and also change the path of file location as appropropriate. I have added comments on where to do this. 
+**Note** that every time you connect to Google Colab, you will have to upload the files - the files are persisted only for a single session. Mounting Google Drive is not possible since that is only allowed for Python currently. So, uploading files to session may be unavoidable.
+
+
+
+
+
+
+**Pending Tasks:**
+1. Link for TEA file (Sara)
+2. Document full methodology
+
+
+---
+
+# **Code to mount Google Drive** **IGNORE as of 12-02-2020** 
+---
+
+**Note**: **IGNORE the commented code below.**
+This code does not work yet. So I have commented it out. Follow file upload to session instructions above.
+
+
+```{r}
+# install.packages("googledrive")
+# library("googledrive")
+
+# if (file.exists("/usr/local/lib/python3.6/dist-packages/google/colab_ipython.py")){
+#   install.packages("R.utils")
+#   library("R.utils")
+#   library("httr")
+#   my_check <- function() {return(TRUE)}
+#   reassignInPackage("is_interactive", pkgName = "httr", my_check)
+#   options(rlang_interactive=TRUE)
+# }   
+```
+
+```{r}
+# drive_deauth()
+```
+
+```{r}
+# options(gargle_oob_default = TRUE)
+```
+
+```{r}
+# drive_auth <- function(email = gargle::gargle_oauth_email(),
+#                        path = NULL,
+#                        scopes = "https://www.googleapis.com/auth/drive",
+#                        cache = gargle::gargle_oauth_cache(),
+#                        use_oob = gargle::gargle_oob_default(),
+#                        token = NULL) {...}
+```
+
+```{r}
+# if (FALSE) {
+# ## load/refresh existing credentials, if available
+# ## otherwise, go to browser for authentication and authorization
+# drive_auth()
+
+# ## see user associated with current token
+# drive_user()
+
+# ## force use of a token associated with a specific email
+# drive_auth(email = "kshankaranarayanan@twu.edu")
+# drive_user()
+
+# ## force a menu where you can choose from existing tokens or
+# ## choose to get a new one
+# drive_auth(email = NA)
+
+# ## use a 'read only' scope, so it's impossible to edit or delete files
+# drive_auth(
+#   scopes = "https://www.googleapis.com/auth/drive.readonly"
+# )
+
+# ## use a service account token
+# drive_auth(path = "foofy-83ee9e7c9c48.json")
+# }
+```
+
+
+
+---
+
+
+# **Code is to invoke R Kernel**
+
+
+---
+
+
+**For the below the typical message you may get is**
+"Warning message in system("python3 -c \"from google.colab import drive\ndrive.mount()\"", :
+“running command 'python3 -c "from google.colab import drive
+drive.mount()"' had status 1”
+
+TRUE"
+
+```{r}
+cat(system('python3 -c "from google.colab import drive\ndrive.mount()"', intern=TRUE), sep='\n', wait=TRUE)
+```
+
+```{r}
+?system
+```
+
+**Typical message for below**
+
+
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+
+also installing the dependencies ‘httpuv’, ‘xtable’, ‘sourcetools’, ‘fastmap’, ‘miniUI’, ‘webshot’, ‘shiny’, ‘manipulateWidget’, ‘mathjaxr’
+
+
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+
+also installing the dependencies ‘XML’, ‘data.table’, ‘rlist’, ‘proxy’, ‘gtools’
+
+
+Loading required package: rgl
+
+Warning message in rgl.init(initValue, onlyNULL):
+“RGL: unable to open X11 display”
+Warning message:
+“'rgl.init' failed, running with 'rgl.useNULL = TRUE'.”
+
+Attaching package: ‘ConsRank’
+
+
+The following object is masked from ‘package:base’:
+
+    labels
+
+```{r}
+install.packages("rgl", repos = "http://cran.rstudio.com/")
+install.packages("ConsRank", repos = "http://cran.rstudio.com/")
+library("ConsRank")
+```
+
+```{r}
+system("add-apt-repository -y ppa:marutter/rrutter")
+system("add-apt-repository -y ppa:marutter/c2d4u")
+system("apt-get update")
+system("apt install -y r-cran-rstan")
+```
+
+**Typical message for below**
+
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+
+also installing the dependencies ‘sp’, ‘RgoogleMaps’, ‘png’, ‘plyr’, ‘rjson’, ‘jpeg’, ‘bitops’
+
+
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+
+```{r}
+install.packages('ggmap')
+install.packages('codetools')
+```
+
+**Typical Message for below**
+
+Loading required package: ggplot2
+
+Google's Terms of Service: https://cloud.google.com/maps-platform/terms/.
+
+Please cite ggmap if you use it! See citation("ggmap") for details.
+
+```{r}
+library("ggmap")
+```
+
+**TEST CODE to Check if R Kernel is invoked**
+
+Output you will see is a graph.
+
+```{r}
+x <- seq(0, 2*pi, length.out=50)
+plot(x, sin(x))
+```
+
+**You have now successfully switched Google Colab to R Kernel from Python. You can run the below program.**
+
+
+
+---
+
+
+---
+**SCHOOL FOOD RANKING PROGRAM** - **METHODOLOGY**
+
+
+---
+
+
+
+---
+
+
+
+**STEP 1: You will need three files as input.** - Added direct API calls to dowload the files on-the-fly. See relevant notes and code
+
+1. TDA Meal Participation Report
+Report Name: School Nutrition Programs - Meal Reimbursement Information - Program Year YYYY
+Link: https://data.texas.gov/dataset/School-Nutrition-Programs-Meal-Reimbursement-Infor/c9s4-hrvh 
+2. TEA Economically Disadvantaged Report **@TODO: Add link. Waiting on SARA MORAN.**
+3. TDA CACFP Report 
+Report name:  "Child and Adult Care Food Programs (CACFP) – Child Care At-Risk Centers – Meal Reimbursement – Program Year XXX" 
+Link: https://data.texas.gov/dataset/Child-and-Adult-Care-Food-Programs-CACFP-Child-Car/bwsa-35kz
+
+
+**Save these files in the file path mantioned as "Note" in the code below.**
+### Generic Catalog from TDA on various Nutrition and Ag. Reports: https://data.texas.gov/browse?Dataset-Category_Category-Tile=Agriculture 
+
+**STEP 2: From Report: School Nutrition Programs - Meal Reimbursement Information - Program Year YYYY, extract data for only ONE claim month. Most preferred Claim Month = "October" else use February.**
+
+**STEP 3: Run below program**
+
+**PREWORK: Install required packages and libraries**
+
+
+
+```{r}
+# install.packages("janitor" ) #This throws an error but looks like we do not need it for the program.
+# install.packages("reshape2" )  #This throws an error but looks like we do not need it for the program.
+install.packages( "stringr" )
+# install.packages(  "lettercase"  )  #This throws an error but looks like we do not need it for the program.
+install.packages("here" )
+```
+
+```{r}
+# This is required to use rename function. It was missing in the original program from the Health Director.
+install.packages("reshape")
+```
+
+```{r}
+# This is required to use PIPES, group by and other data functions. 
+# It was missing in the original program from the Health Director.
+
+install.packages("dplyr")  
+```
+
+# **PY2019-2020 Food Ranking**
+
+```{r}
+library(tidyverse)
+# library(janitor)
+# library(reshape2)
+library(stringr)
+# library(lettercase)
+library(here)
+library(reshape)
+```
+
+```{r}
+#PY2019-2020 food rankings
+
+
+#Designate packages to be used for analysis
+
+library(here)
+# library(reshape2)
+library(reshape) #required for using rename function
+library(dplyr)  #for data manipulation; select, groupBy, filter, Pipes
+#Reference on dplyr:  https://datacarpentry.org/R-genomics/04-dplyr.html
+
+#Import data
+
+#NOTE: "raw_data_bycampus" file is just the "WF Attachment 147678 PIR 19-097_SNP PY18_Contact and Meals_ChildrAtRiskOrg_Report 1" file re-named
+
+# Set program year
+
+YearNm = '2019-2020'
+
+#Import data
+
+harmony <- c(101858, 101862, 71806, 15828, 161807, 101846, 227816) #use to combine Harmony districts
+kipp_data <- c(227820, 57837, 101813, 15826) #use to combine KIPP districts
+
+#campus level data
+frank <- read.csv(here("/content/sample_data/Data", "raw_data_bycampus.csv"), stringsAsFactors = F) %>% 
+  reshape::rename(c("CE." = "CEID",
+                    "Site." = "SiteID"))
+
+# write_csv(frank, here("/content/sample_data/Data", "frank.csv"))  
+
+
+#district level data
+cacfp <- read.csv(here("/content/sample_data/Data", "cacfp.csv"), stringsAsFactors = F) %>% 
+  select(CEID, SiteID, SupperDays, SnackDays)
+
+# write_csv(cacfp, here("/content/sample_data/Data", "cacfpnew.csv"))  
+
+#district level data
+tea <- read.csv(here("/content/sample_data/Data", "state_overall.csv"))  %>% 
+  filter(!is.na(Campus.Number)) %>% #changed code since the data did not have NA and it was filtering out only NA
+  select(District.Number, County.Name, Total.Number.of.Students, Eco.Dis.Num) %>% 
+  mutate(
+#calculate percentage economically disadvantaged 
+#  Had to change the code for 2019-2020 data since TEA data came with raw Eco Dis rather than %
+    # frl.total = Total.Number.of.Students * (X..Eco.Dis/100),
+    Eco.Dis.pct = 100* (Eco.Dis.Num/Total.Number.of.Students ),
+    frl.total = Eco.Dis.Num,
+#Designate correct Kipp and Harmony IDs
+    District.Number = ifelse(District.Number %in% harmony, 227816, 
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+#Collapse districts
+  group_by(District.Number) %>% 
+  summarise(
+    tea.all.stud = sum(Total.Number.of.Students, na.rm=T),
+    # tea.eco.dis.pct = weighted.mean(X..Eco.Dis, Total.Number.of.Students, na.rm=T),
+    tea.eco.dis.pct = weighted.mean(Eco.Dis.pct, Total.Number.of.Students, na.rm=T),
+    # frl.total = sum(frl.total)
+    frl.total = sum(Eco.Dis.Num)
+  )
+
+# write_csv(tea, here("/content/sample_data/Data", "tea.csv"))  
+
+
+#Aggregate school-level TDA data up to district level
+
+#combine frank and cacfp data into district data frame, CEP is coded into a dummy variable, 
+# designate correct kipp and harmony ids again, collapses districts & create summary stats for those districts
+district <- left_join(frank, cacfp, by=c("CEID", "SiteID")) %>% 
+  reshape::rename(c("CountyDistrictCode" = "District.Number")) %>% 
+  mutate(
+    CEP01 = ifelse(CEP=="Y", 1, 0),
+    District.Number = ifelse(District.Number %in% harmony, 227816,
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+  group_by(District.Number) %>% 
+  summarise(
+    CEName = first(CEName),
+    County = first(CECounty),
+    ESC.Region = first(ESC),
+    Eligible.Free = sum(NoOfChildrenApprovedForFreeMeals_OCTClaim, na.rm = T),
+    Enrollment_TDA = sum(NoOfEnrolledChildren_OCTClaim, na.rm = T),
+    Eligible.Reduced = sum(NoOfChildrenApprovedForReducedMeals_OCTClaim, na.rm = T),
+    NSLP.Days.Served = first(PYLunchDays),
+    NSLP.Free = sum(TotalLunchMealsFree, na.rm=T),
+    NSLP.Reduced = sum(TotalLunchMealsReducedPrice, na.rm=T),
+    SBP.Days.Served = first(PYBreakfastDays),
+    SBP.Free = sum(TotalBreakfastMealsFree, na.rm=T),
+    SBP.Reduced = sum(TotalBreakfastMealsReducedPrice, na.rm=T),
+    CACFP.at.Risk.Supper.Days.Served = mean(SupperDays, na.rm=T),
+    CACFP.at.Risk.Snack.Days.Served = mean(SnackDays, na.rm=T),
+    NSLP.Snack.Days.Served = mean(PYSnackDays, na.rm=T),
+    CEP = mean(CEP01, na.rm=T)
+  ) %>%
+  #Now merges tea and district, designates correct kipp and harmony ids again, collapses districts and creates sum stats
+  filter(!is.na(ESC.Region) & District.Number>1000) %>% 
+  left_join(., tea, by="District.Number") %>% 
+  mutate(
+    CEName = ifelse(District.Number==227820, "KIPP SCHOOLS", CEName),
+    CEName = ifelse(District.Number==227816, "HARMONY", CEName),
+    tda.frl.total = Eligible.Free + Eligible.Reduced,
+    CACFP.at.Risk.Supper.Days.Served = ifelse(is.nan(CACFP.at.Risk.Supper.Days.Served), 0, CACFP.at.Risk.Supper.Days.Served),
+    NSLP.Snack.Days.Served = ifelse(is.nan(NSLP.Snack.Days.Served), 0, NSLP.Snack.Days.Served)
+  )
+#I think the is.nan (above) is designating Nulls as 0s
+
+# write_csv(district, here("/content/sample_data/Data", "supperdays.csv"))  
+
+
+#cREATES first ranking data set where districts over 10K students and where at least 60% economicallly disadvantaged
+district_10k <- district %>% 
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    #Calculating avg daily participation (ADP) - total meals over days served
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    #this is creating percentage participation - avg meals served over eligible kids on campus 
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    #setting supper/snack participation out of 100 for scale conversion
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    #creating weighted score
+  district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  )
+
+# write_csv(district_10k, here("/content/sample_data/Data", "district_10k_inter.csv"))  
+
+# -----------------------------------------------
+# These are David's old notes:
+#I'm using the number actually approved by TDA for Free and Reduced
+#If I use the EcoDis number from TEA, things get wacky and over 100%
+# -----------------------------------------------
+
+
+
+
+
+#Create Table for districts over 10k  
+#arranges ranks by overall score, selects what variables appear in table, labels variables to make prettier
+district10 <- district_10k  %>%
+  arrange(desc(district_sum)) %>% 
+  mutate(rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+       Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")) %>%       
+                    reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack"))
+
+# write_csv(district10, here("/content/sample_data/Results", "district_10.csv"))  
+
+
+#Large dsitricts, 50k or more
+#Creates same table as before but with 50K or more students
+district50 <- district %>% 
+  filter(tea.all.stud>=50000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  ) %>% 
+  arrange(desc(district_sum)) %>% 
+  mutate(
+    rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    snack_anyafter = ifelse(snack_anyafter==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")
+  ) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+
+#Non-CEP, 10K districts  
+#This is the issue I mentioned about the sorting and ranking mismatch (at least I think that's what the problem is)
+#I appreciate your help!
+district10_nonCEP <- district_10k %>%
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  arrange(desc(district_sum)) %>%
+  select(CEName, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+         CEP = ifelse(CEP>0, "Yes", "No")) %>%
+  filter(CEP == "No") %>%
+  mutate(rank = row_number()) %>%
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) %>%
+  select(`District Name`, `Rank`, everything())
+
+
+
+#Middle income (60-70% Eco Dis)
+#creates middle income by using the same 10k data set, but looking at the range of 60-70 percent economically disadvantaged
+# takes out high poverty schools
+# couldn't get this to work either...
+district10_midinc <- district_10k %>% 
+  filter(tea.eco.dis.pct>=60 & tea.eco.dis.pct<=70) %>% 
+  arrange(desc(district_sum))%>% 
+  mutate(rank = row_number()) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+#export all five data sets to .csv files 
+write_csv(district10, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm, "_10k_print.csv")))
+write_csv(district50, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_50k_print.csv")))
+write_csv(district10_nonCEP, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_10k_nonCEP_print.csv")))
+write_csv(district10_midinc, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_10k_middleinc_print.csv")))
+
+ 
+```
+
+
+
+---
+
+**DOWLOAD REQUIRED INPUT FILES USING API**
+
+---
+
+
+```{r}
+#Required for API calls; json file format
+install.packages("httr") 
+install.packages("jsonlite") 
+```
+
+```{r}
+## This code snippet will download all required files
+## @TODO Remove suffix "_APITEST" to the input names in the Food ranking code. 
+## I have used a suffix "_APITEST" so I do not overwrite my original files 
+
+library(httr)
+library(jsonlite)
+
+## Download Meal partiicapation file from TDA
+request = GET("https://data.texas.gov/resource/c9s4-hrvh.json")
+#### Test: Uncomment below code to ensure request succeeded
+# request$status_code #should return 200 else API call failed
+response <- content(request, as = "text", encoding = "UTF-8")
+df1 <- fromJSON(response, flatten = TRUE) %>% 
+  data.frame()
+
+#### Test: Uncomment below code to check column header names to ensure file is what you are expecting
+# colnames(df1)
+
+# Save file in approprate location. Change location if needed
+# IMPORTANT NOTE: Change output file name to "raw_data_bycampus.csv"
+write_csv(df1, here("/content/sample_data/Data", "raw_data_bycampus_APITEST.csv"))
+
+## Download CACFP At risk file from TDA
+request = GET("https://data.texas.gov/resource/bwsa-35kz.json")
+#### Test: Uncomment below code to ensure request succeeded
+# request$status_code #should return 200 else API call failed
+response <- content(request, as = "text", encoding = "UTF-8")
+df2 <- fromJSON(response, flatten = TRUE) %>% 
+  data.frame()
+
+#### Test: Uncomment below code to check column header names to ensure file is what you are expecting
+# colnames(df2)
+
+# Save file in approprate location. Change location if needed
+# IMPORTANT NOTE: Change output file name to "cacfp.csv"
+write_csv(df2, here("/content/sample_data/Data", "cacfp_APITEST.csv"))
+
+
+
+
+## Download Economically Disadvantged file from TEA
+####### PENDING #######
+## @TODO Waiting on link from SARA MORAN. 
+# request = GET("")
+# #### Test: Uncomment below code to ensure request succeeded
+# # request$status_code #should return 200 else API call failed
+# response <- content(request, as = "text", encoding = "UTF-8")
+# df3 <- fromJSON(response, flatten = TRUE) %>% 
+#   data.frame()
+
+# #### Test: Uncomment below code to check column header names to ensure file is what you are expecting
+# # colnames(df3)
+
+# # Save file in approprate location. Change location if needed
+# # IMPORTANT NOTE: Change output file name to "state_overall.csv"
+# write_csv(df3, here("/content/sample_data/Data", "state_overall_APITEST.csv"))
+
+```
+
+### **TEST CODE AND OLD CODE below. 
+For 2018 ranking Code scroll down**
+
+```{r}
+
+frankt <- read.csv(here("/content/sample_data/Data", "WF Attachment 171256 SNP_Claims_PY20_Children At Risk_12232020.csv"), stringsAsFactors = F) %>% 
+  select(CEID,CEName,CountyDistrictCode,CECounty,ClaimDate, ESC, SiteID, EnrollmentQty, FreeEligQty, RedcEligQty, BreakfastServedFree, BreakfastServedRedc,LunchServedFree,LunchServedRedc,SnacksServedFree,SnacksServedRedc)
+ForCEPt <- read.csv(here("/content/sample_data/Data/Contact_Information_and_Site-Level_PY_2019-2020.csv"), stringsAsFactors = F) %>% 
+  select(CEP,CEID, SiteID)
+# colnames(ForCEPt)
+testdf <- left_join(frankt, ForCEPt, by=c("CEID", "SiteID")  )
+df <- filter(testdf, ClaimDate == "10/1/2019 12:00:00 AM")  
+# write_csv(df, here("/content/sample_data/Data", "CEP.csv"))
+
+cacfp <- read.csv(here("/content/sample_data/Data/WF Attachment 171258 CACFP At Risk_Claims_PY20_Children At Risk_12232020.csv"), stringsAsFactors = F) %>% 
+  select(CEID, SiteID, SupperDays, SnackDays)
+# df2 <- filter(cacfp, ClaimDate == "10/1/2019 12:00:00 AM") %>% 
+#   select(CEID, SiteID, SupperDays, SnackDays)
+# colnames(cacfp)
+
+
+
+
+
+
+# # write_csv(testdf2, here("/content/sample_data/Data", "merged.csv"))
+
+# colnames(frank)
+```
+
+```{r}
+ df <- filter(frank, ClaimDate == "10/1/2019 12:00:00 AM")  
+ write_csv(df, here("/content/sample_data/Data", "OCTClaims.csv"))
+
+```
+
+```{r}
+### NOTE: Change the file location if needed. Else, 
+### simply create a folder called "Data" in the "Sample_data" folder in google colab and upload your input files
+tea <- read.csv(here("/content/sample_data/Data", "ChildrentAtRisk_PIR_TEA_2020.csv"))  
+tea <- rename(tea, c( "X6.Digit.County.District.Number"= "District.Number" ))
+tea <- rename(tea, c("X9.Digit.Campus.Number"="Campus.Number"))
+# colnames(tea)
+write_csv(tea, here("/content/sample_data/Data", "state_overall.csv"))
+```
+
+```{r}
+ ### NOTE: Change the file location if needed. Else, 
+### simply create a folder called "Data" in the "Sample_data" folder in google colab and upload your input files
+tea <- read.csv(here("/content/sample_data/Data", "state_overall.csv"))  %>% 
+  filter(is.na(Campus.Number)) %>% 
+  select(District.Number, County.Name, Total.Number.of.Students, X..Econ.Disadv) %>% 
+  mutate(
+#calculate percentage economically disadvantaged 
+    frl.total = Total.Number.of.Students * (X..Econ.Disadv/100),
+#Designate correct Kipp and Harmony IDs
+    District.Number = ifelse(District.Number %in% harmony, 227816, 
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+#Collapse districts
+  group_by(District.Number) %>% 
+  summarise(
+    tea.all.stud = sum(Total.Number.of.Students, na.rm=T),
+    tea.eco.dis.pct = weighted.mean(X..Econ.Disadv, Total.Number.of.Students, na.rm=T),
+    frl.total = sum(frl.total)
+  )
+```
+
+```{r}
+harmony <- c(101858, 101862, 71806, 15828, 161807, 101846, 227816) #use to combine Harmony districts
+kipp_data <- c(227820, 57837, 101813, 15826) #use to combine KIPP districts
+```
+
+### 12/23/2020 - here is where I stopped. CACFP mean supper days calculating fine. Now calculate the columns from meal claim file and then uncomment the formula below.
+
+```{r}
+#combine frank and cacfp data into district data frame, CEP is coded into a dummy variable, 
+# designate correct kipp and harmony ids again, collapses districts & create summary stats for those districts
+district <- left_join(df, cacfp, by=c("CEID", "SiteID")) %>% 
+  reshape::rename(c("CountyDistrictCode" = "District.Number")) %>% 
+  mutate(
+    CEP01 = ifelse(CEP=="Y", 1, 0),
+    District.Number = ifelse(District.Number %in% harmony, 227816,
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+  group_by(District.Number) %>% 
+  summarise(
+    CEName = first(CEName),
+    County = first(CECounty),
+    ESC.Region = first(ESC),
+    Eligible.Free = sum(FreeEligQty, na.rm = T),
+    Enrollment_TDA = sum(EnrollmentQty, na.rm = T),
+    Eligible.Reduced = sum(EnrollmentQty, na.rm = T),
+    # NSLP.Days.Served = first(PYLunchDays),
+    # NSLP.Free = sum(TotalLunchMealsFree, na.rm=T),
+    # NSLP.Reduced = sum(TotalLunchMealsReducedPrice, na.rm=T),
+    # SBP.Days.Served = first(PYBreakfastDays),
+    # SBP.Free = sum(TotalBreakfastMealsFree, na.rm=T),
+    # SBP.Reduced = sum(TotalBreakfastMealsReducedPrice, na.rm=T),
+    Eligible.Free = sum(FreeEligQty, na.rm = T),
+    Enrollment_TDA = sum(EnrollmentQty, na.rm = T),
+    Eligible.Reduced = sum(RedcEligQty, na.rm = T),
+    # NSLP.Days.Served = first(PYLunchDays),
+    # NSLP.Free = sum(TotalLunchMealsFree, na.rm=T),
+    # NSLP.Reduced = sum(TotalLunchMealsReducedPrice, na.rm=T),
+    # SBP.Days.Served = first(PYBreakfastDays),
+    # SBP.Free = sum(TotalBreakfastMealsFree, na.rm=T),
+    # SBP.Reduced = sum(TotalBreakfastMealsReducedPrice, na.rm=T),
+    # CACFP.at.Risk.Supper.Days.Served = mean(SupperDays, na.rm=T),
+    # CACFP.at.Risk.Snack.Days.Served = mean(SnackDays, na.rm=T),
+    # NSLP.Snack.Days.Served = mean(PYSnackDays, na.rm=T),
+    CEP = mean(CEP01, na.rm=T)
+  ) %>%
+  #Now merges tea and district, designates correct kipp and harmony ids again, collapses districts and creates sum stats
+  filter(!is.na(ESC.Region) & District.Number>1000) %>% 
+  left_join(., tea, by="District.Number") %>% 
+  mutate(
+    CEName = ifelse(District.Number==227820, "KIPP SCHOOLS", CEName),
+    CEName = ifelse(District.Number==227816, "HARMONY", CEName),
+    # tda.frl.total = Eligible.Free + Eligible.Reduced,
+    CACFP.at.Risk.Supper.Days.Served = ifelse(is.nan(CACFP.at.Risk.Supper.Days.Served), 0, CACFP.at.Risk.Supper.Days.Served),
+    # NSLP.Snack.Days.Served = ifelse(is.nan(NSLP.Snack.Days.Served), 0, NSLP.Snack.Days.Served)
+  )
+#I think the is.nan (above) is designating Nulls as 0s
+
+write_csv(district, here("/content/sample_data/Data_original_2018", "calculated.csv"))  
+```
+
+
+
+---
+
+
+**Missing Libraries ADDED**
+
+
+---
+
+
+
+1.   library(dplyr) for Pipes (%<%), Select, GroupBy etc.
+2.   library(reshape) for using Rename function (Reshape was not working with CRAN)
+
+Notes on some error/warning messages
+1. `summarise()` ungrouping output (override with `.groups` argument) - THis is a friendly message. It does group by and summarise by district number. Uncomment the code below to dump the intermediate output of this step.
+
+
+```{r}
+library(here)
+# library(reshape2)
+library(reshape) #required for using rename function
+library(dplyr)  #for data manipulation; select, groupBy, filter, Pipes
+#Reference on dplyr:  https://datacarpentry.org/R-genomics/04-dplyr.html
+
+# (Notes to add in this section
+# state_overall eco dis % versus raw numbers. We will need to construct this file from the raw file from TDA
+# "CEP" col is missing from the meal reimbursement report from TDA. Use the contact information site level program report from TDA to get this info. https://data.texas.gov/dataset/School-Nutrition-Programs-Contact-Information-and-/h47d-wyhn
+# in CACFP, the col name for SnackDays is now split into PMSnackdays and AMsnackdays. Ask sara if these need summed up for our program or use PMSnack. Since it is afterschool, may be best to use PMSnackDays?
+# ) <Last updated 12/11/2020>
+
+harmony <- c(101858, 101862, 71806, 15828, 161807, 101846, 227816) #use to combine Harmony districts
+kipp_data <- c(227820, 57837, 101813, 15826) #use to combine KIPP districts
+### NOTE: Change the file location if needed. Else, 
+### simply create a folder called "Data" in the "Sample_data" folder in google colab and upload your input files
+# frank <- read.csv(here("/content/sample_data/Data", "raw_data_bycampus.csv"), stringsAsFactors = F) 
+#reshape::rename(c(CE. = "CEID")) #, "Site." = "SiteID")) -- Throws error; using "remame" instead; This requires library(reshape) see below
+# frank <- rename(frank, c(CE.="CEID"))
+# frank <- rename(frank, c(Site.="SiteID"))
+# colnames( frank ) #Test: print col names to check renaming
+
+#district level data
+### NOTE: Change the file location if needed. Else, 
+### simply create a folder called "Data" in the "Sample_data" folder in google colab and upload your input files
+# cacfp <- read.csv(here("/content/sample_data/Data", "cacfp.csv"), stringsAsFactors = F) %>% 
+#   select(CEID, SiteID, SupperDays, PMSnackDays)
+
+
+### NOTE: Change the file location if needed. Else, 
+### simply create a folder called "Data" in the "Sample_data" folder in google colab and upload your input files
+# tea <- read.csv(here("/content/sample_data/Data", "state_overall.csv"))  %>% 
+#   filter(is.na(Campus.Number)) %>% 
+#   select(District.Number, County.Name, Total.Number.of.Students, X..Eco.Dis) %>% 
+#   mutate(
+# #calculate percentage economically disadvantaged 
+#     frl.total = Total.Number.of.Students * (X..Eco.Dis/100),
+# #Designate correct Kipp and Harmony IDs
+#     District.Number = ifelse(District.Number %in% harmony, 227816, 
+#                              ifelse(District.Number %in% kipp_data, 227820, District.Number))
+#   ) %>% 
+# #Collapse districts
+#   group_by(District.Number) %>% 
+#   summarise(
+#     tea.all.stud = sum(Total.Number.of.Students, na.rm=T),
+#     tea.eco.dis.pct = weighted.mean(X..Eco.Dis, Total.Number.of.Students, na.rm=T),
+#     frl.total = sum(frl.total)
+#   )
+
+# ------------------ TESTING ABOVE CODE ------------------------------------------- #
+# colnames (teaNA) #Test: has it now added the above NEW column in the dataframe
+  ###### Uncomment the code below to dump the intermediate output of this step. #####
+#  write_csv(tea, here("/content/sample_data/Data", "TEA _print.csv"))
+
+#Aggregate school-level TDA data up to district level
+
+#combine frank and cacfp data into district data frame, CEP is coded into a dummy variable, 
+# designate correct kipp and harmony ids again, collapses districts & create summary stats for those districts
+# testdf <- left_join(frank, cacfp, by=c("CEID", "SiteID")  )
+
+
+# testdf2 <- merge(testdf, ForCEPt[, c("CEP","CEID", "SiteID")], by=c("CEID", "SiteID"))
+
+
+district <- frank %>% 
+  reshape::rename(c("CountyDistrictCode" = "District.Number")) %>% 
+  mutate(
+    CEP01 = ifelse(CEP=="Y", 1, 0),
+    District.Number = ifelse(District.Number %in% harmony, 227816,
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+  group_by(District.Number) %>% 
+  summarise(
+    CEName = first(CEName),
+    County = first(CECounty),
+    ESC.Region = first(ESC),
+    Eligible.Free = sum(NoOfChildrenApprovedForFreeMeals_OCTClaim, na.rm = T),
+    Enrollment_TDA = sum(NoOfEnrolledChildren_OCTClaim, na.rm = T),
+    Eligible.Reduced = sum(NoOfChildrenApprovedForReducedMeals_OCTClaim, na.rm = T),
+    NSLP.Days.Served = first(PYLunchDays),
+    NSLP.Free = sum(TotalLunchMealsFree, na.rm=T),
+    NSLP.Reduced = sum(TotalLunchMealsReducedPrice, na.rm=T),
+    SBP.Days.Served = first(PYBreakfastDays),
+    SBP.Free = sum(TotalBreakfastMealsFree, na.rm=T),
+    SBP.Reduced = sum(TotalBreakfastMealsReducedPrice, na.rm=T),
+    CACFP.at.Risk.Supper.Days.Served = mean(SupperDays, na.rm=T),
+    CACFP.at.Risk.Snack.Days.Served = mean(PMSnackDays, na.rm=T),
+    NSLP.Snack.Days.Served = mean(PYSnackDays, na.rm=T),
+    CEP = mean(CEP01, na.rm=T)  
+  ) %>%
+#Now merges tea and district, designates correct kipp and harmony ids again, collapses districts and creates sum stats
+  filter(!is.na(ESC.Region) & District.Number>1000) %>% 
+  left_join(., tea, by="District.Number") %>% 
+  mutate(
+    CEName = ifelse(District.Number==227820, "KIPP SCHOOLS", CEName),
+    CEName = ifelse(District.Number==227816, "HARMONY", CEName),
+    tda.frl.total = Eligible.Free + Eligible.Reduced,
+    CACFP.at.Risk.Supper.Days.Served = ifelse(is.nan(CACFP.at.Risk.Supper.Days.Served), 0, CACFP.at.Risk.Supper.Days.Served),
+    NSLP.Snack.Days.Served = ifelse(is.nan(NSLP.Snack.Days.Served), 0, NSLP.Snack.Days.Served)
+  )
+
+# ------------------ TESTING ABOVE CODE ------------------------------------------- #
+  ###### Uncomment the code below to dump the intermediate output of this step. #####
+#  write_csv(district, here("/content/sample_data/Data", "district _print.csv"))
+
+#CREATES first ranking data set where districts over 10K students and where at least 60% economicallly disadvantaged
+district_10k <- district %>% 
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    #Calculating avg daily participation (ADP) - total meals over days served
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    #this is creating percentage participation - avg meals served over eligible kids on campus 
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    #setting supper/snack participation out of 100 for scale conversion
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    #creating weighted score
+  district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  )
+
+# ------------------ TESTING ABOVE CODE ------------------------------------------- #
+  ###### Uncomment the code below to dump the intermediate output of this step. #####
+#  write_csv(district_10k, here("/content/sample_data/Data", "district_10k.csv"))
+
+#Create Table for districts over 10k  
+#arranges ranks by overall score, selects what variables appear in table, labels variables to make prettier
+districtGT10 <- district_10k  %>%
+  arrange(desc(district_sum)) %>% 
+  mutate(rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+       Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")) %>%       
+                    reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack"))
+
+# ------------------ TESTING ABOVE CODE ------------------------------------------- #
+  ###### Uncomment the code below to dump the intermediate output of this step. #####
+#  write_csv(districtGT10, here("/content/sample_data/Data", "districtGT10.csv"))
+
+#Large dsitricts, 50k or more
+#Creates same table as before but with 50K or more students
+district50 <- district %>% 
+  filter(tea.all.stud>=50000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  ) %>% 
+  arrange(desc(district_sum)) %>% 
+  mutate(
+    rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    snack_anyafter = ifelse(snack_anyafter==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")
+  ) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+
+#Non-CEP, 10K districts  
+#This is the issue I mentioned about the sorting and ranking mismatch (at least I think that's what the problem is)
+#I appreciate your help!
+district10_nonCEP <- district_10k %>%
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  arrange(desc(district_sum)) %>%
+  select(CEName, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+         CEP = ifelse(CEP>0, "Yes", "No")) %>%
+  filter(CEP == "No") %>%
+  mutate(rank = row_number()) %>%
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) %>%
+  select(`District Name`, `Rank`, everything())
+
+
+
+#Middle income (60-70% Eco Dis)
+#creates middle income by using the same 10k data set, but looking at the range of 60-70 percent economically disadvantaged
+# takes out high poverty schools
+# couldn't get this to work either...
+district10_midinc <- district_10k %>% 
+  filter(tea.eco.dis.pct>=60 & tea.eco.dis.pct<=70) %>% 
+  arrange(desc(district_sum))%>% 
+  mutate(rank = row_number()) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+#export all five data sets to .csv files
+write_csv(districtGT10, here("/content/sample_data/Data", "foodrankings2018_10k_print_mod.csv"))
+write_csv(district50, here("/content/sample_data/Data", "foodrankings2018_50k_print_mod.csv"))
+write_csv(district10_nonCEP, here("/content/sample_data/Data", "foodrankings2018_10k_nonCEP_print_mod.csv"))
+write_csv(district10_midinc, here("/content/sample_data/Data", "foodrankings2018_10k_middleinc_print_mod.csv"))
+```
+
+### 2018 Ranking with 2018 Data
+
+```{r}
+#2018 foood rankings
+
+
+#Designate packages to be used for analysis
+
+library(here)
+# library(reshape2)
+library(reshape) #required for using rename function
+library(dplyr)  #for data manipulation; select, groupBy, filter, Pipes
+#Reference on dplyr:  https://datacarpentry.org/R-genomics/04-dplyr.html
+
+#Import data
+
+#NOTE: "raw_data_bycampus" file is just the "WF Attachment 147678 PIR 19-097_SNP PY18_Contact and Meals_ChildrAtRiskOrg_Report 1" file re-named
+
+# Set program year
+
+YearNm = '2019-2020'
+# YearNm = '2018-2019'
+
+#Import data
+
+harmony <- c(101858, 101862, 71806, 15828, 161807, 101846, 227816) #use to combine Harmony districts
+kipp_data <- c(227820, 57837, 101813, 15826) #use to combine KIPP districts
+
+#campus level data
+frank <- read.csv(here("/content/sample_data/Data", "raw_data_bycampus.csv"), stringsAsFactors = F) %>% 
+  reshape::rename(c("CE." = "CEID",
+                    "Site." = "SiteID"))
+
+# write_csv(frank, here("/content/sample_data/Data", "frank.csv"))  
+
+
+#district level data
+cacfp <- read.csv(here("/content/sample_data/Data", "cacfp.csv"), stringsAsFactors = F) %>% 
+  select(CEID, SiteID, SupperDays, SnackDays)
+
+# write_csv(cacfp, here("/content/sample_data/Data", "cacfpnew.csv"))  
+
+#district level data
+tea <- read.csv(here("/content/sample_data/Data", "state_overall.csv"))  %>% 
+  filter(is.na(Campus.Number)) %>% 
+  select(District.Number, County.Name, Total.Number.of.Students, X..Eco.Dis) %>% 
+  mutate(
+#calculate percentage economically disadvantaged 
+#  Had to change the code for 2019-2020 data since TEA data came with raw Eco Dis rather than %
+    frl.total = Total.Number.of.Students * (X..Eco.Dis/100),
+    # Eco.Dis.pct = 100* (X..Eco.Dis/Total.Number.of.Students ),
+    # frl.total = X..Eco.Dis,
+#Designate correct Kipp and Harmony IDs
+    District.Number = ifelse(District.Number %in% harmony, 227816, 
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+#Collapse districts
+  group_by(District.Number) %>% 
+  summarise(
+    tea.all.stud = sum(Total.Number.of.Students, na.rm=T),
+    tea.eco.dis.pct = weighted.mean(X..Eco.Dis, Total.Number.of.Students, na.rm=T),
+    # tea.eco.dis.pct = weighted.mean(Eco.Dis.pct, Total.Number.of.Students, na.rm=T),
+    frl.total = sum(frl.total)
+    # frl.total = sum(X..Eco.Dis)
+  )
+
+# write_csv(tea, here("/content/sample_data/Data", "tea.csv"))  
+
+
+#Aggregate school-level TDA data up to district level
+
+#combine frank and cacfp data into district data frame, CEP is coded into a dummy variable, 
+# designate correct kipp and harmony ids again, collapses districts & create summary stats for those districts
+district <- left_join(frank, cacfp, by=c("CEID", "SiteID")) %>% 
+  reshape::rename(c("CountyDistrictCode" = "District.Number")) %>% 
+  mutate(
+    CEP01 = ifelse(CEP=="Y", 1, 0),
+    District.Number = ifelse(District.Number %in% harmony, 227816,
+                             ifelse(District.Number %in% kipp_data, 227820, District.Number))
+  ) %>% 
+  group_by(District.Number) %>% 
+  summarise(
+    CEName = first(CEName),
+    County = first(CECounty),
+    ESC.Region = first(ESC),
+    Eligible.Free = sum(NoOfChildrenApprovedForFreeMeals_OCTClaim, na.rm = T),
+    Enrollment_TDA = sum(NoOfEnrolledChildren_OCTClaim, na.rm = T),
+    Eligible.Reduced = sum(NoOfChildrenApprovedForReducedMeals_OCTClaim, na.rm = T),
+    NSLP.Days.Served = first(PYLunchDays),
+    NSLP.Free = sum(TotalLunchMealsFree, na.rm=T),
+    NSLP.Reduced = sum(TotalLunchMealsReducedPrice, na.rm=T),
+    SBP.Days.Served = first(PYBreakfastDays),
+    SBP.Free = sum(TotalBreakfastMealsFree, na.rm=T),
+    SBP.Reduced = sum(TotalBreakfastMealsReducedPrice, na.rm=T),
+    CACFP.at.Risk.Supper.Days.Served = mean(SupperDays, na.rm=T),
+    CACFP.at.Risk.Snack.Days.Served = mean(SnackDays, na.rm=T),
+    NSLP.Snack.Days.Served = mean(PYSnackDays, na.rm=T),
+    CEP = mean(CEP01, na.rm=T)
+  ) %>%
+  #Now merges tea and district, designates correct kipp and harmony ids again, collapses districts and creates sum stats
+  filter(!is.na(ESC.Region) & District.Number>1000) %>% 
+  left_join(., tea, by="District.Number") %>% 
+  mutate(
+    CEName = ifelse(District.Number==227820, "KIPP SCHOOLS", CEName),
+    CEName = ifelse(District.Number==227816, "HARMONY", CEName),
+    tda.frl.total = Eligible.Free + Eligible.Reduced,
+    CACFP.at.Risk.Supper.Days.Served = ifelse(is.nan(CACFP.at.Risk.Supper.Days.Served), 0, CACFP.at.Risk.Supper.Days.Served),
+    NSLP.Snack.Days.Served = ifelse(is.nan(NSLP.Snack.Days.Served), 0, NSLP.Snack.Days.Served)
+  )
+#I think the is.nan (above) is designating Nulls as 0s
+
+# write_csv(district, here("/content/sample_data/Data", "supperdays.csv"))  
+
+
+#cREATES first ranking data set where districts over 10K students and where at least 60% economicallly disadvantaged
+district_10k <- district %>% 
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    #Calculating avg daily participation (ADP) - total meals over days served
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    #this is creating percentage participation - avg meals served over eligible kids on campus 
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    #setting supper/snack participation out of 100 for scale conversion
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    #creating weighted score
+  district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  )
+
+# write_csv(district_10k, here("/content/sample_data/Results", "district_10k.csv"))  
+
+# -----------------------------------------------
+# These are David's old notes:
+#I'm using the number actually approved by TDA for Free and Reduced
+#If I use the EcoDis number from TEA, things get wacky and over 100%
+# -----------------------------------------------
+
+
+
+
+
+#Create Table for districts over 10k  
+#arranges ranks by overall score, selects what variables appear in table, labels variables to make prettier
+district10 <- district_10k  %>%
+  arrange(desc(district_sum)) %>% 
+  mutate(rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+       Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")) %>%       
+                    reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack"))
+
+# write_csv(district10, here("/content/sample_data/Results", "district_10.csv"))  
+
+
+#Large dsitricts, 50k or more
+#Creates same table as before but with 50K or more students
+district50 <- district %>% 
+  filter(tea.all.stud>=50000 & tea.eco.dis.pct>=60) %>% 
+  mutate(
+    Eligible.SBP.ADP = ifelse(SBP.Days.Served==0, 0, (SBP.Free + SBP.Reduced)/SBP.Days.Served),
+    Eligible.NSLP.ADP = ifelse(NSLP.Days.Served==0, 0, (NSLP.Free + NSLP.Reduced)/NSLP.Days.Served)
+  )  %>% 
+  mutate(
+    Pct.Eligible.SBP.Participation = (Eligible.SBP.ADP/tda.frl.total)*100,
+    Pct.Eligible.NSLP.Participation = (Eligible.NSLP.ADP/tda.frl.total)*100,
+    cacfp_supper01 = ifelse(CACFP.at.Risk.Supper.Days.Served>0, 100, 0),
+    snack_anyafter =  ifelse(CACFP.at.Risk.Supper.Days.Served>0 | NSLP.Snack.Days.Served>0, 100, 0)
+  ) %>% 
+  mutate(
+    district_sum = ((Pct.Eligible.NSLP.Participation*0.25)+(Pct.Eligible.SBP.Participation*0.5)+(cacfp_supper01*0.1)+(snack_anyafter*0.15))
+  ) %>% 
+  arrange(desc(district_sum)) %>% 
+  mutate(
+    rank = row_number()) %>% 
+  select(CEName, rank, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CEP) %>%
+  mutate(
+    cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+    snack_anyafter = ifelse(snack_anyafter==100, "Yes", "No"),
+    CEP = ifelse(CEP>0, "Yes", "No")
+  ) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+
+#Non-CEP, 10K districts  
+#This is the issue I mentioned about the sorting and ranking mismatch (at least I think that's what the problem is)
+#I appreciate your help!
+district10_nonCEP <- district_10k %>%
+  filter(tea.all.stud>=10000 & tea.eco.dis.pct>=60) %>% 
+  arrange(desc(district_sum)) %>%
+  select(CEName, tea.all.stud, tea.eco.dis.pct, district_sum, Pct.Eligible.NSLP.Participation, 
+         Pct.Eligible.SBP.Participation, cacfp_supper01, snack_anyafter, CACFP.at.Risk.Supper.Days.Served, CEP) %>%
+  mutate(cacfp_supper01 = ifelse(cacfp_supper01==100, "Yes", "No"),
+         CEP = ifelse(CEP>0, "Yes", "No")) %>%
+  filter(CEP == "No") %>%
+  mutate(rank = row_number()) %>%
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) %>%
+  select(`District Name`, `Rank`, everything())
+
+
+
+#Middle income (60-70% Eco Dis)
+#creates middle income by using the same 10k data set, but looking at the range of 60-70 percent economically disadvantaged
+# takes out high poverty schools
+# couldn't get this to work either...
+district10_midinc <- district_10k %>% 
+  filter(tea.eco.dis.pct>=60 & tea.eco.dis.pct<=70) %>% 
+  arrange(desc(district_sum))%>% 
+  mutate(rank = row_number()) %>% 
+  reshape::rename(c(CEName = "District Name",
+                    rank = "Rank",
+                    tea.all.stud = "Total Enrollment",
+                    tea.eco.dis.pct = "% Economically Disadvantaged",
+                    district_sum = "Overall Score",
+                    Pct.Eligible.NSLP.Participation = "% Lunch Participation",
+                    Pct.Eligible.SBP.Participation = "% Breakfast Participation",
+                    cacfp_supper01 = "CACFP Supper",
+                    snack_anyafter = "Afterschool Snack")) 
+
+
+#export all five data sets to .csv files - this will use oroginal input files from 2018
+write_csv(district10, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm, "_10k_print.csv")))
+write_csv(district50, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_50k_print.csv")))
+write_csv(district10_nonCEP, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_10k_nonCEP_print.csv")))
+write_csv(district10_midinc, here("/content/sample_data/Results", paste("foodrankings_PY", YearNm,"_10k_middleinc_print.csv"))
+
+
+
+#export all five data sets to .csv files - this will use modified input files for  2018 that only contains 
+# requried (r) columns
+# write_csv(district10, here("/content/sample_data/Results", "foodrankings2018_10k_print.csv"))
+# write_csv(district50, here("/content/sample_data/Results", "foodrankings2018_50k_print.csv"))
+# write_csv(district10_nonCEP, here("/content/sample_data/Results", "foodrankings2018_10k_nonCEP_print.csv"))
+# write_csv(district10_midinc, here("/content/sample_data/Results", "foodrankings2018_10k_middleinc_print.csv"))
+```
+
+
+
+---
+
+
+**Healthy Eating Index for Innovation**
+
+(DONOT BELOW FOR STANDARD FOOD RANKING)
+
+---
+
+
+```{r}
+install.packages(hei)
+# https://rdrr.io/cran/hei/
+```
+
+```{r}
+library(hei)
+
+# help(hei)
+```
+
+```{r}
+#' Individual HEI scores calculation.
+#'
+#' \code{hei} calculates a Health Eating Index (HEI) score for individuals in the National Health and Nutrition Examination Survey (NHANES) studies based on input dietary, demographic and Food Pattern Equivalent Database (FPED) data.
+#'
+#' @param fped Food Pattern Equivalent Database data; see \link{get_fped}
+#' @param diet dietary data from NHANES database; see \link{get_diet}
+#' @param demograph demographic data from NHANES database; see \link{get_demo}
+#' @param agethresh numeric threshold for age in years of survey participants to be included; any individual less than the value specified will be excluded; defaults to 2
+#' @param verbose boolean indicating whether or not all columns from processed data should be output; default is \code{FALSE} designating only the following are included in the returned \code{data.frame}:
+#' \itemize{
+#' \item SEQN: Respondent sequence number
+#' \item RIDAGEYR: Best age in years of the sample person at time of HH screening. Individuals 85 and over are topcoded at 85 years of age
+#' \item HEI: Overall Health Eating Index score for the given participant
+#' }
+#' @return Object of class \code{data.frame}; defaults to only include columns for respondent identifier, age, and overall HEI score of each individual; this can be overidden with the \code{verbose} parameter to output all columns of the input data sets as well as 33 columns of calculated data related to HEI scoring and, significantly, a 70th column containing the total HEI score for each participant.
+#' @export
+#'
+#' @references \url{https://www.cnpp.usda.gov/healthyeatingindex}
+#'
+#' @examples
+#' \dontrun{
+#' fped0910 <- get_fped("2009/2010", "both")
+#' diet0910 <- get_diet("2009/2010", "both")
+#' demo0910 <- get_demo("2009/2010")
+#' hei(fped0910,diet0910,demo0910)
+#'
+#' fped0506 <- get_fped("2005/2006", "first")
+#' diet0506 <- get_diet("2005/2006", "first")
+#' demo0506 <- get_demo("2005/2006")
+#' hei(fped0506,diet0506,demo0506, agethresh = 18)
+#' }
+
+hei <- function(fped, diet, demograph, agethresh = 2, verbose = FALSE) {
+
+    dat <- combo(fped, diet, demograph, agethresh)
+
+    dat <- leg_all(dat)
+
+    # heiveg
+    # total veggies
+    dat$vegden <- dat$lvtotal / (dat$TKCAL/1000)
+    dat$heiveg <- 5*(dat$vegden/1.1)
+    dat$heiveg <- ifelse(dat$heiveg > 5, 5, dat$heiveg)
+
+    # heibngrn
+    # beans and greens
+    dat$bngrden <- dat$lbeangrn / (dat$TKCAL/1000)
+    dat$heibngrn <- 5*(dat$bngrden/0.2)
+    dat$heibngrn  <- ifelse(dat$heibngrn  > 5, 5, dat$heibngrn)
+
+    # heitotfr
+    # total fruit
+    dat$frtden <- dat$T_F_TOTAL/(dat$TKCAL/1000)
+    dat$heitotfrt <- 5*(dat$frtden/0.8)
+    dat$heitotfrt <- ifelse(dat$heitotfrt > 5, 5, dat$heitotfrt)
+
+    # heiwholefrt
+    # whole fruit
+    dat$wholefrtden <- dat$WHOLEFRT/(dat$TKCAL/1000)
+    dat$heiwholefrt <- 5*(dat$wholefrtden/0.4)
+    dat$heiwholefrt <- ifelse(dat$heiwholefrt > 5, 5, dat$heiwholefrt)
+
+    # heiwholegrain
+    # whole grain
+    dat$wholegrainden <- dat$T_G_WHOLE/(dat$TKCAL/1000)
+    dat$heiwholegrain <- 10*(dat$wholegrainden/1.5)
+    dat$heiwholegrain <- ifelse(dat$heiwholegrain > 10, 10, dat$heiwholegrain)
+
+    # heidairy
+    # dairy
+    dat$dairyden <- dat$T_D_TOTAL/(dat$TKCAL/1000)
+    dat$heidairy <- 10*(dat$dairyden/1.3)
+    dat$heidairy <- ifelse(dat$heidairy > 10, 10, dat$heidairy)
+
+    # heitotpro
+    # total protein
+    dat$totproden <- dat$lallmeat/(dat$TKCAL/1000)
+    dat$heitotpro <- 5*(dat$totproden/2.5)
+    dat$heitotpro <- ifelse(dat$heitotpro > 5, 5, dat$heitotpro)
+
+    # heiseaplantpro
+    # seaplant protein
+    dat$seaplantden <- dat$lseaplant/(dat$TKCAL/1000)
+    dat$heiseaplantpro <- 5*(dat$seaplantden/0.8)
+    dat$heiseaplantpro <- ifelse(dat$heiseaplantpro > 5, 5, dat$heiseaplantpro)
+
+    # heifattyacid
+    # fatty acid
+    dat$faratio <- ifelse(dat$TSFAT > 0,
+                          dat$MONOPOLY / dat$TSFAT,
+                          0)
+
+    dat$heifattyacid <- ifelse(dat$TSFAT == 0 & dat$MONOPOLY == 0,
+                               10,
+                               NA)
+
+    dat$heifattyacid <- ifelse(dat$TSFAT == 0 & dat$MONOPOLY > 0,
+                               10,
+                               dat$heifattyacid)
+
+    dat$heifattyacid <- ifelse(dat$faratio >= 2.5,
+                               10,
+                               dat$heifattyacid)
+
+    dat$heifattyacid <- ifelse(dat$faratio <= 1.2,
+                               0,
+                               dat$heifattyacid)
+
+    dat$heifattyacid <- ifelse(is.na(dat$heifattyacid),
+                               10*((dat$faratio-1.2)/(2.5-1.2)),
+                               dat$heifattyacid)
+    # heisodi
+    # sodium
+    dat$sodden <- dat$TSODI / dat$TKCAL
+
+    dat$heisodi <- ifelse(dat$sodden <= 1.1,
+                          10,
+                          NA)
+    dat$heisodi <- ifelse(dat$sodden >= 2.0,
+                          0,
+                          dat$heisodi)
+    dat$heisodi <- ifelse(is.na(dat$heisodi),
+                          10 - (10*(dat$sodden - 1.1)/(2.0-1.1)),
+                          dat$heisodi)
+
+    # heirefgrain
+    # refined grain
+    dat$refgrainnden <- dat$T_G_REFINED / (dat$TKCAL/1000)
+
+    dat$heirefgrain <- ifelse(dat$refgrainnden <= 1.8,
+                              10,
+                              NA)
+    dat$heirefgrain <- ifelse(dat$refgrainnden >= 4.3,
+                              0,
+                              dat$heirefgrain)
+
+    dat$heirefgrain <- ifelse(is.na(dat$heirefgrain),
+                              10 - (10*(dat$refgrainnden - 1.8)/(4.3-1.8)),
+                              dat$heirefgrain)
+
+    # heisofaas
+    dat$sofa_perc <- 100* (dat$EMPTYCAL10/dat$TKCAL)
+
+    dat$heisofaas <- ifelse(dat$sofa_perc >= 50,
+                            0,
+                            NA)
+
+    dat$heisofaas <- ifelse(dat$sofa_perc <= 19,
+                            20,
+                            dat$heisofaas)
+
+    dat$heisofaas = ifelse(is.na(dat$heisofaas),
+                           20 - (20*(dat$sofa_perc-19)/(50-19)),
+                           dat$heisofaas)
+
+    dat$HEI = dat$heiveg + dat$heibngrn + dat$heitotfrt + dat$heiwholefrt + dat$heiwholegrain + dat$heidairy + dat$heitotpro + dat$heiseaplantpro + dat$heifattyacid + dat$heirefgrain + dat$heisofaas + dat$heisodi
+
+    if (verbose) {
+
+        dat
+
+    }
+    else {
+
+        dat[,c("SEQN","RIDAGEYR","HEI")]
+
+    }
+
+}
+```
+
